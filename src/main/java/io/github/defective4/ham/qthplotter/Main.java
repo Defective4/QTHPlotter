@@ -66,6 +66,7 @@ public final class Main {
         JButton ok = new JButton("Process");
         JSpinner locatorSize = new JSpinner(new SpinnerNumberModel(32, 1, Integer.MAX_VALUE, 1));
         JCheckBox overlay = new JCheckBox("Map overlay");
+        JCheckBox cc = new JCheckBox("Render country codes");
 
         mainPanel.add(new Label("Choose a base map:"));
         mainPanel.add(new Label(" "));
@@ -96,7 +97,7 @@ public final class Main {
         mainPanel.add(new Label(" "));
         mainPanel.add(new Label(" "));
         mainPanel.add(overlay);
-        mainPanel.add(new Label(" "));
+        mainPanel.add(cc);
         mainPanel.add(ok);
 
         ok.addActionListener(e -> {
@@ -107,32 +108,55 @@ public final class Main {
             plotter.setLocatorMode((MapPlotter.LocatorMode) locatorModeChooser.getSelectedItem());
             plotter.setLocatorSymbol(adjustLocator((int) locatorSize.getValue()));
             plotter.setOverlayMode(overlay.isSelected());
+            plotter.setSignsMode(cc.isSelected());
 
             try {
-                WSJTXParser.WSJTEntry[] entries = WSJTXParser.parse(lf);
-                List<StationLocator> stations = new ArrayList<>();
-                for (WSJTXParser.WSJTEntry entry : entries) {
-                    WSJTXParser.WSJTData data = entry.getData();
-                    if (data != null) {
-                        Maidenhead.Locator locator = data.getLocator();
-                        if (locator != null) {
-                            boolean duplicate = false;
-                            for (StationLocator el : stations)
-                                if (locator.equals(el.getLocator())) {
-                                    duplicate = true;
-                                    break;
-                                }
-                            if (!duplicate)
-                                stations.add(new StationLocator(locator, data.getFrom(), entry.getRXSignal()));
-                        }
-                    }
-                }
-                plotter.plot(stations);
                 JFileChooser chooser = new JFileChooser();
                 chooser.setDialogTitle("Select output folder");
                 chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                 chooser.setApproveButtonText("Save");
                 if (chooser.showSaveDialog(win) == JFileChooser.APPROVE_OPTION) {
+                    File dir = chooser.getSelectedFile();
+                    WSJTXParser.WSJTEntry[] entries = WSJTXParser.parse(lf);
+                    List<StationLocator> stations = new ArrayList<>();
+                    List<StationLocator> stations2 = new ArrayList<>();
+                    try (PrintWriter pw = new PrintWriter(Files.newOutputStream(new File(dir,
+                                                                                         "stations.csv").toPath()))) {
+                        pw.println("Callsign, Signal (db), Latitude, Longitude, Locator");
+                        for (WSJTXParser.WSJTEntry entry : entries) {
+                            WSJTXParser.WSJTData data = entry.getData();
+                            if (data != null) {
+                                Maidenhead.Locator locator = data.getLocator();
+                                if (locator != null) {
+                                    boolean duplicateLocator = false;
+                                    boolean duplicateCS = false;
+                                    for (StationLocator el : stations)
+                                        if (locator.equals(el.getLocator())) {
+                                            duplicateLocator = true;
+                                            break;
+                                        }
+
+                                    for (StationLocator el : stations2)
+                                        if (data.getFrom().equals(el.getCallsign())) {
+                                            duplicateCS = true;
+                                            break;
+                                        }
+                                    StationLocator station = new StationLocator(locator,
+                                                                                data.getFrom(),
+                                                                                entry.getRXSignal());
+                                    if (!duplicateCS) {
+                                        pw.println(station.getCallsign() + ", " + station.getSignal() + ", " + station.getLocator()
+                                                                                                                      .getLatitude() + ", " + station.getLocator()
+                                                                                                                                                     .getLongtitude() + ", " + station.getLocator()
+                                                                                                                                                                                      .getOrigin());
+                                        stations2.add(station);
+                                    }
+                                    if (!duplicateLocator) stations.add(station);
+                                }
+                            }
+                        }
+                    }
+                    plotter.plot(stations);
                     JDialog dial = new JDialog();
                     dial.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
                     dial.setContentPane(new JOptionPane("Processing..."));
@@ -140,22 +164,12 @@ public final class Main {
                     dial.setResizable(false);
                     dial.setVisible(true);
                     DateFormat fmt = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
-                    File dir = chooser.getSelectedFile();
                     if (dir != null && dir.isDirectory()) {
                         dir.mkdirs();
                         ImageIO.write(plotter.getPlottedMap(), "png", new File(dir, "plotted.png"));
                         try (PrintWriter pw = new PrintWriter(Files.newOutputStream(new File(dir,
-                                                                                             "stations.csv").toPath()))) {
-                            pw.println("Callsign, Signal (db), Latitude, Longitude");
-                            for (StationLocator station : stations) {
-                                pw.println(station.getCallsign() + ", " + station.getSignal() + ", " + station.getLocator()
-                                                                                                              .getLatitude() + ", " + station.getLocator()
-                                                                                                                                             .getLongtitude());
-                            }
-                        }
-                        try (PrintWriter pw = new PrintWriter(Files.newOutputStream(new File(dir,
                                                                                              "calls.csv").toPath()))) {
-                            pw.println("Time, Mode, RX Signal, From, To, Reported Signal, Latitude, Longitude");
+                            pw.println("Time, Mode, RX Signal, From, To, Reported Signal, Latitude, Longitude, Locator");
                             for (WSJTXParser.WSJTEntry entry : entries) {
                                 WSJTXParser.WSJTData data = entry.getData();
                                 pw.println(String.join(", ",
@@ -168,7 +182,8 @@ public final class Main {
                                                                             data.getSignal()) : "",
                                                                     data.getLocator() == null ? "n/a, n/a" : data.getLocator()
                                                                                                                  .getLatitude() + ", " + data.getLocator()
-                                                                                                                                             .getLatitude()}));
+                                                                                                                                             .getLatitude() + ", " + data.getLocator()
+                                                                                                                                                                         .getOrigin()}));
                             }
                         }
                     }

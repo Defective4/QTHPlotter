@@ -2,6 +2,7 @@ package io.github.defective4.ham.qthplotter;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.Field;
@@ -59,7 +60,7 @@ public class MapPlotter {
     private ColorMode colorMode = ColorMode.STATIC;
     private Color staticColor = Color.red;
     private LocatorMode locatorMode = LocatorMode.SQUARE;
-    private boolean overlayMode;
+    private boolean overlayMode, signsMode;
 
     public MapPlotter() {
     }
@@ -67,9 +68,40 @@ public class MapPlotter {
     private static Color gradient(Color low, Color high, float level) {
         if (level < 0) level = 0;
         if (level > 1) level = 1;
-        return new Color((int) (low.getRed() * level + high.getRed() * (1f - level)),
-                         (int) (low.getGreen() * level + high.getGreen() * (1f - level)),
-                         (int) (low.getBlue() * level + high.getBlue() * (1f - level)));
+        return new Color((int) (high.getRed() * level + low.getRed() * (1f - level)),
+                         (int) (high.getGreen() * level + low.getGreen() * (1f - level)),
+                         (int) (high.getBlue() * level + low.getBlue() * (1f - level)));
+    }
+
+    private static BufferedImage renderCallsign(String callsign, Graphics2D reference) {
+        StringBuilder country = new StringBuilder();
+        for (String ch : callsign.split("")) {
+            try {
+                Integer.parseInt(ch);
+                break;
+            } catch (Exception e) {
+                country.append(ch);
+            }
+        }
+        if (country.length() == 0) return new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+        reference.setFont(reference.getFont().deriveFont(Font.BOLD).deriveFont(32f));
+        BufferedImage img = new BufferedImage(reference.getFontMetrics().stringWidth(country.toString()),
+                                              reference.getFontMetrics().getHeight(),
+                                              BufferedImage.TYPE_INT_ARGB);
+
+        Graphics2D g2 = img.createGraphics();
+        g2.setFont(reference.getFont());
+        g2.setColor(Color.BLACK);
+        g2.drawString(country.toString(), 0, img.getHeight());
+        return img;
+    }
+
+    public boolean isSignsMode() {
+        return signsMode;
+    }
+
+    public void setSignsMode(boolean signsMode) {
+        this.signsMode = signsMode;
     }
 
     public boolean isOverlayMode() {
@@ -122,6 +154,7 @@ public class MapPlotter {
     }
 
     public void plot(List<StationLocator> stations) {
+        if (overlayMode) setBaseMap(originalMap);
         Graphics2D g2 = plotted.createGraphics();
         if (!overlayMode) g2.drawImage(originalMap, 0, 0, null);
         for (StationLocator station : stations) {
@@ -135,7 +168,7 @@ public class MapPlotter {
             Color baseColor;
             switch (colorMode) {
                 case SIGNAL: {
-                    baseColor = gradient(Color.red, Color.green, (float) (station.getSignal() + 20) / 20);
+                    baseColor = gradient(Color.red, Color.green, (float) (station.getSignal() + 20) / 30);
                     break;
                 }
                 case COUNTRY: {
@@ -178,9 +211,18 @@ public class MapPlotter {
                                 newLocator.setRGB(x, y, new Color(0, 0, 0, 0).getRGB());
                             }
                         }
-                    int x = (from.x + to.x) / 2;
-                    int y = (from.y + to.y) / 2;
-                    g2.drawImage(newLocator, x - newLocator.getWidth() / 2, y + newLocator.getHeight(), null);
+                    int x = from.x;
+                    int y = from.y;
+                    g2.drawImage(newLocator, x - newLocator.getWidth() / 2, y - newLocator.getHeight(), null);
+                    if (signsMode) {
+                        BufferedImage rendered = renderCallsign(station.getCallsign(), g2);
+                        g2.drawImage(rendered,
+                                     x - newLocator.getWidth() / 2 + newLocator.getWidth() / 4,
+                                     (int) (y - newLocator.getHeight() + newLocator.getHeight() / 3),
+                                     newLocator.getWidth() / 2,
+                                     newLocator.getHeight() / 2,
+                                     null);
+                    }
                     break;
                 }
             }

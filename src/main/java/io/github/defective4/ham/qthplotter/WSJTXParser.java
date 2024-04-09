@@ -40,11 +40,11 @@ public final class WSJTXParser {
         }
 
         public String getFrom() {
-            return getType() == FTType.CQ ? raw[1] : raw[0];
+            return (getType() == FTType.CQ ? raw[1] : raw[0]).replace("<", "").replace(">", "");
         }
 
         public String getTo() {
-            return getType() == FTType.CQ ? null : raw[1];
+            return getType() == FTType.CQ ? null : raw[1].replace("<", "").replace(">", "");
         }
 
         public int getSignal() {
