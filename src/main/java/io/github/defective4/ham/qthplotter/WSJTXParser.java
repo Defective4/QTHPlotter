@@ -44,7 +44,7 @@ public final class WSJTXParser {
         }
 
         public String getTo() {
-            return (getType() == FTType.CQ ? null : raw[1]).replace("<", "").replace(">", "");
+            return getType() == FTType.CQ ? null : raw[1].replace("<", "").replace(">", "");
         }
 
         public int getSignal() {
