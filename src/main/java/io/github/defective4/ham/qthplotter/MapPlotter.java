@@ -122,6 +122,7 @@ public class MapPlotter {
     }
 
     public void plot(List<StationLocator> stations) {
+        if (overlayMode) setBaseMap(originalMap);
         Graphics2D g2 = plotted.createGraphics();
         if (!overlayMode) g2.drawImage(originalMap, 0, 0, null);
         for (StationLocator station : stations) {
@@ -178,7 +179,7 @@ public class MapPlotter {
                                 newLocator.setRGB(x, y, new Color(0, 0, 0, 0).getRGB());
                             }
                         }
-                    int x = (from.x + to.x) / 2;
+                    int x = from.x;
                     int y = (from.y + to.y) / 2;
                     g2.drawImage(newLocator, x - newLocator.getWidth() / 2, y + newLocator.getHeight(), null);
                     break;
