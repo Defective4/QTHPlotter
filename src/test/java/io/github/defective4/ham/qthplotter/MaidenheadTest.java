@@ -24,8 +24,8 @@ public final class MaidenheadTest {
 
     @Test
     public void decodeTest() {
-        Assert.assertEquals(Maidenhead.decode("KN10"), new Maidenhead.Locator(40.500f, 23.000f));
-        Assert.assertEquals(Maidenhead.decode("LF85"), new Maidenhead.Locator(-34.500f, 57.000f));
+        Assert.assertEquals(Maidenhead.decode("KN10"), new Maidenhead.Locator(40.500f, 23.000f, "KN10"));
+        Assert.assertEquals(Maidenhead.decode("LF85"), new Maidenhead.Locator(-34.500f, 57.000f, "LF85"));
         for (String loc : INVALID_LOCATORS)
             Assert.assertThrows(IllegalArgumentException.class, () -> Maidenhead.decode(loc));
     }

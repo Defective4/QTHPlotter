@@ -5,10 +5,16 @@ import java.util.Objects;
 public final class Maidenhead {
     public static class Locator {
         private final float latitude, longtitude;
+        private final String origin;
 
-        public Locator(float latitude, float longtitude) {
+        public Locator(float latitude, float longtitude, String origin) {
             this.latitude = latitude;
             this.longtitude = longtitude;
+            this.origin = origin;
+        }
+
+        public String getOrigin() {
+            return origin;
         }
 
         public float getLatitude() {
@@ -20,7 +26,7 @@ public final class Maidenhead {
         }
 
         public Locator add(float deltaLatitude, float deltaLongtitude) {
-            return new Locator(this.latitude + deltaLatitude, this.longtitude + deltaLongtitude);
+            return new Locator(this.latitude + deltaLatitude, this.longtitude + deltaLongtitude, origin);
         }
 
         @Override
@@ -48,7 +54,8 @@ public final class Maidenhead {
     public static Locator decode(String locator) {
         if (!isLocator(locator)) throw new IllegalArgumentException("Invalid locator string");
         return new Locator(10 * (locator.charAt(1) - 'A') + Integer.parseInt(locator.substring(3, 4)) - 90 + 0.5f,
-                           20 * (locator.charAt(0) - 'A') + 2 * Integer.parseInt(locator.substring(2, 3)) - 180 + 1f);
+                           20 * (locator.charAt(0) - 'A') + 2 * Integer.parseInt(locator.substring(2, 3)) - 180 + 1f,
+                           locator);
     }
 
     public static boolean isLocator(String locatorString) {

@@ -136,7 +136,7 @@ public class MapPlotter {
             Color baseColor;
             switch (colorMode) {
                 case SIGNAL: {
-                    baseColor = gradient(Color.red, Color.green, (float) (station.getSignal() + 20) / 20);
+                    baseColor = gradient(Color.red, Color.green, (float) (station.getSignal() + 20) / 30);
                     break;
                 }
                 case COUNTRY: {

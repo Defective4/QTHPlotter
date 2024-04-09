@@ -146,16 +146,17 @@ public final class Main {
                         ImageIO.write(plotter.getPlottedMap(), "png", new File(dir, "plotted.png"));
                         try (PrintWriter pw = new PrintWriter(Files.newOutputStream(new File(dir,
                                                                                              "stations.csv").toPath()))) {
-                            pw.println("Callsign, Signal (db), Latitude, Longitude");
+                            pw.println("Callsign, Signal (db), Latitude, Longitude, Locator");
                             for (StationLocator station : stations) {
                                 pw.println(station.getCallsign() + ", " + station.getSignal() + ", " + station.getLocator()
                                                                                                               .getLatitude() + ", " + station.getLocator()
-                                                                                                                                             .getLongtitude());
+                                                                                                                                             .getLongtitude() + ", " + station.getLocator()
+                                                                                                                                                                              .getOrigin());
                             }
                         }
                         try (PrintWriter pw = new PrintWriter(Files.newOutputStream(new File(dir,
                                                                                              "calls.csv").toPath()))) {
-                            pw.println("Time, Mode, RX Signal, From, To, Reported Signal, Latitude, Longitude");
+                            pw.println("Time, Mode, RX Signal, From, To, Reported Signal, Latitude, Longitude, Locator");
                             for (WSJTXParser.WSJTEntry entry : entries) {
                                 WSJTXParser.WSJTData data = entry.getData();
                                 pw.println(String.join(", ",
@@ -168,7 +169,8 @@ public final class Main {
                                                                             data.getSignal()) : "",
                                                                     data.getLocator() == null ? "n/a, n/a" : data.getLocator()
                                                                                                                  .getLatitude() + ", " + data.getLocator()
-                                                                                                                                             .getLatitude()}));
+                                                                                                                                             .getLatitude() + ", " + data.getLocator()
+                                                                                                                                                                         .getOrigin()}));
                             }
                         }
                     }
