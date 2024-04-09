@@ -37,7 +37,7 @@ public class MapPlotter {
     }
 
     public enum LocatorMode {
-        SQUARE, SYMBOL;
+        SQUARE, SYMBOL
     }
 
     private static final Color[] RANDOM_COLORS;
@@ -59,6 +59,7 @@ public class MapPlotter {
     private ColorMode colorMode = ColorMode.STATIC;
     private Color staticColor = Color.red;
     private LocatorMode locatorMode = LocatorMode.SQUARE;
+    private boolean overlayMode;
 
     public MapPlotter() {
     }
@@ -69,6 +70,14 @@ public class MapPlotter {
         return new Color((int) (low.getRed() * level + high.getRed() * (1f - level)),
                          (int) (low.getGreen() * level + high.getGreen() * (1f - level)),
                          (int) (low.getBlue() * level + high.getBlue() * (1f - level)));
+    }
+
+    public boolean isOverlayMode() {
+        return overlayMode;
+    }
+
+    public void setOverlayMode(boolean overlayMode) {
+        this.overlayMode = overlayMode;
     }
 
     public BufferedImage getLocatorSymbol() {
@@ -114,7 +123,7 @@ public class MapPlotter {
 
     public void plot(List<StationLocator> stations) {
         Graphics2D g2 = plotted.createGraphics();
-        g2.drawImage(originalMap, 0, 0, null);
+        if (!overlayMode) g2.drawImage(originalMap, 0, 0, null);
         for (StationLocator station : stations) {
             Maidenhead.Locator location = station.getLocator();
             Location from = mercatorProjection(location);

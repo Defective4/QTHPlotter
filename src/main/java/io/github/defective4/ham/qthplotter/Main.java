@@ -39,7 +39,7 @@ public final class Main {
         win.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new GridLayout(16, 2, 2, 1));
+        mainPanel.setLayout(new GridLayout(17, 2, 2, 1));
 
         JLabel mapFile = new JLabel();
         JLabel logFile = new JLabel();
@@ -65,6 +65,7 @@ public final class Main {
             locatorModeChooser.addItem(mode);
         JButton ok = new JButton("Process");
         JSpinner locatorSize = new JSpinner(new SpinnerNumberModel(32, 1, Integer.MAX_VALUE, 1));
+        JCheckBox overlay = new JCheckBox("Map overlay");
 
         mainPanel.add(new Label("Choose a base map:"));
         mainPanel.add(new Label(" "));
@@ -94,6 +95,8 @@ public final class Main {
         mainPanel.add(new Label(" "));
         mainPanel.add(new Label(" "));
         mainPanel.add(new Label(" "));
+        mainPanel.add(overlay);
+        mainPanel.add(new Label(" "));
         mainPanel.add(ok);
 
         ok.addActionListener(e -> {
@@ -103,6 +106,7 @@ public final class Main {
             plotter.setStaticColor(staticColor.getColor());
             plotter.setLocatorMode((MapPlotter.LocatorMode) locatorModeChooser.getSelectedItem());
             plotter.setLocatorSymbol(adjustLocator((int) locatorSize.getValue()));
+            plotter.setOverlayMode(overlay.isSelected());
 
             try {
                 WSJTXParser.WSJTEntry[] entries = WSJTXParser.parse(lf);
