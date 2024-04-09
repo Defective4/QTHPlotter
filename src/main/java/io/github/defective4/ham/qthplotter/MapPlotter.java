@@ -180,8 +180,8 @@ public class MapPlotter {
                             }
                         }
                     int x = from.x;
-                    int y = (from.y + to.y) / 2;
-                    g2.drawImage(newLocator, x - newLocator.getWidth() / 2, y + newLocator.getHeight(), null);
+                    int y = from.y;
+                    g2.drawImage(newLocator, x - newLocator.getWidth() / 2, y - newLocator.getHeight(), null);
                     break;
                 }
             }
