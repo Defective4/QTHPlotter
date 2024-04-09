@@ -66,6 +66,7 @@ public final class Main {
         JButton ok = new JButton("Process");
         JSpinner locatorSize = new JSpinner(new SpinnerNumberModel(32, 1, Integer.MAX_VALUE, 1));
         JCheckBox overlay = new JCheckBox("Map overlay");
+        JCheckBox cc = new JCheckBox("Render country codes");
 
         mainPanel.add(new Label("Choose a base map:"));
         mainPanel.add(new Label(" "));
@@ -96,7 +97,7 @@ public final class Main {
         mainPanel.add(new Label(" "));
         mainPanel.add(new Label(" "));
         mainPanel.add(overlay);
-        mainPanel.add(new Label(" "));
+        mainPanel.add(cc);
         mainPanel.add(ok);
 
         ok.addActionListener(e -> {
@@ -107,6 +108,7 @@ public final class Main {
             plotter.setLocatorMode((MapPlotter.LocatorMode) locatorModeChooser.getSelectedItem());
             plotter.setLocatorSymbol(adjustLocator((int) locatorSize.getValue()));
             plotter.setOverlayMode(overlay.isSelected());
+            plotter.setSignsMode(cc.isSelected());
 
             try {
                 JFileChooser chooser = new JFileChooser();
