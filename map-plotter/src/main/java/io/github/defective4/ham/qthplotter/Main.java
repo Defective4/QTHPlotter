@@ -1,5 +1,8 @@
 package io.github.defective4.ham.qthplotter;
 
+import io.github.defective4.ham.ui.ColorChooserButton;
+import io.github.defective4.ham.ui.FileChooserButton;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.Color;

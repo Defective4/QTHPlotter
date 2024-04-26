@@ -1,4 +1,4 @@
-package io.github.defective4.ham.qthplotter;
+package io.github.defective4.ham.ui;
 
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
